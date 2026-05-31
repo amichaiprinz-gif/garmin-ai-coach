@@ -154,9 +154,17 @@ EXERCISE_PLANS = {
 def build_strength(workout_type: str, label: str, sets: int = 3):
     exercises = EXERCISE_PLANS.get(workout_type, UPPER_EXERCISES)
     steps = [_exec_step(1, "warmup", END_TIME, 5 * 60)]
-    for i, (category, name, reps) in enumerate(exercises, start=2):
-        steps.append(_exercise_step(i, category, name, reps, sets))
-    steps.extend(_core_steps(len(steps) + 1))
+    order = 2
+    for category, name, reps in exercises:
+        # Descending reps across sets (e.g. 12/10/8) to match real fatigue
+        rep_counts = [reps, max(reps - 2, 6), max(reps - 4, 6)]
+        for s in range(sets):
+            steps.append(_exercise_step(order, category, name, rep_counts[s]))
+            order += 1
+        # Rest between sets
+        steps.append(_exec_step(order, "rest", END_TIME, 60))
+        order += 1
+    steps.extend(_core_steps(order))
     return _workout(f"כוח — {label} — בוב AI", "strength", steps)
 
 
