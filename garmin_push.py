@@ -25,9 +25,10 @@ STEP_TYPE = {
 
 NO_TARGET  = {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
 HR_TARGET  = {"workoutTargetTypeId": 4, "workoutTargetTypeKey": "heart.rate.zone"}
-END_TIME   = {"conditionTypeId": 2, "conditionTypeKey": "time"}
-END_DIST   = {"conditionTypeId": 3, "conditionTypeKey": "distance"}
-END_ITER   = {"conditionTypeId": 7, "conditionTypeKey": "iterations"}
+END_TIME   = {"conditionTypeId": 2,  "conditionTypeKey": "time"}
+END_DIST   = {"conditionTypeId": 3,  "conditionTypeKey": "distance"}
+END_ITER   = {"conditionTypeId": 7,  "conditionTypeKey": "iterations"}
+END_REPS   = {"conditionTypeId": 10, "conditionTypeKey": "reps"}
 
 
 def _exec_step(order, step_key, end_condition, end_value,
@@ -101,11 +102,11 @@ def _exercise_step(order, exercise_category, exercise_name, reps, sets=3) -> dic
         "type": "ExecutableStepDTO",
         "stepOrder": order,
         "stepType": STEP_TYPE["interval"],
-        "endCondition": {"conditionTypeId": 4, "conditionTypeKey": "reps"},
+        "endCondition": END_REPS,
         "endConditionValue": reps,
         "targetType": NO_TARGET,
+        "category": exercise_category,
         "exerciseName": exercise_name,
-        "exerciseCategory": exercise_category,
     }
 
 
@@ -124,7 +125,7 @@ UPPER_EXERCISES = [
     ("SHOULDER_PRESS",  "DUMBBELL_SHOULDER_PRESS",         12),  # 7.5kg
     ("LATERAL_RAISE",   "DUMBBELL_LATERAL_RAISE",          15),  # 7.5kg
     ("PUSH_UP",         "DIAMOND_PUSH_UP",                 10),  # bodyweight, triceps
-    ("FRONT_RAISE",     "DUMBBELL_FRONT_RAISE",            12),  # 7.5kg
+    ("SHOULDER_PRESS",  "DUMBBELL_FRONT_RAISE",            12),  # 7.5kg
 ]
 
 BACK_EXERCISES = [

@@ -15,8 +15,7 @@ from supabase import create_client
 from metrics import get_metrics
 from weather import get_weather, weather_summary
 
-DATA_PATH = _DATA_PATH
-from config import GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY, DATA_PATH as _DATA_PATH
+from config import GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY, DATA_PATH
 
 client = Groq(api_key=GROQ_API_KEY)
 sb = create_client(SUPABASE_URL, SUPABASE_KEY)
