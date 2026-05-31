@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+.garmin_tokens/
+garmin_sync.log
+connect_now.py
+test_connect.py
