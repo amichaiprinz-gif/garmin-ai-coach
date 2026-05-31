@@ -51,9 +51,30 @@ def load_history() -> str:
         return f"(היסטוריה לא זמינה: {e})"
 
 
+def load_workout_feedback() -> str:
+    try:
+        import requests
+        r = requests.get(
+            "https://fantastic-waddle-coral.vercel.app/api/bot/memory",
+            headers={"Authorization": "Bearer homebase-bot-2025"},
+            timeout=5
+        )
+        items = r.json()
+        feedback = [i for i in items if i.get("key", "").startswith("workout_feedback_")]
+        if not feedback:
+            return ""
+        lines = ["=== פידבק מאימונים קודמים ==="]
+        for item in sorted(feedback, key=lambda x: x["key"])[-5:]:
+            lines.append(f"  {item['key'].replace('workout_feedback_','')}: {item['value']}")
+        return "\n".join(lines)
+    except Exception:
+        return ""
+
+
 def build_system_prompt(data: dict) -> str:
     activities_json = json.dumps(data.get("activities", []), indent=2, ensure_ascii=False)
     history = load_history()
+    workout_feedback = load_workout_feedback()
     w = get_weather()
     weather_text = weather_summary(w)
     try:
@@ -84,6 +105,8 @@ def build_system_prompt(data: dict) -> str:
 
 === מדדי עומס אימון (CTL/ATL/TSB/ACWR/Recovery) ===
 {metrics_text}
+
+{workout_feedback}
 
 === מזג אוויר (תל אביב) ===
 {weather_text}
