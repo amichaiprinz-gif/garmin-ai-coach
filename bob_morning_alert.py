@@ -3,7 +3,8 @@ Morning alert — runs daily, sends WhatsApp message only if something is off.
 Called by OpenClaw scheduled skill or Windows Task Scheduler.
 """
 
-import os, json, re
+import sys, os, json, re
+sys.stdout.reconfigure(encoding='utf-8')
 from datetime import date
 from supabase import create_client
 from groq import Groq
@@ -58,12 +59,12 @@ def generate_alert(data: dict) -> str:
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": "אתה בוב, מאמן כושר של אמיחי. שלח התראת בוקר קצרה (3-4 שורות) בעברית. היה ישיר ומעשי."},
-            {"role": "user", "content": f"הנתונים של הבוקר מראים: {issues_text}. מה כדאי לאמיחי לדעת ולעשות היום?"},
+            {"role": "system", "content": "אתה בוב, מאמן כושר של עמיחי. שלח התראת בוקר קצרה (3-4 שורות) בעברית. היה ישיר ומעשי."},
+            {"role": "user", "content": f"הנתונים של הבוקר מראים: {issues_text}. מה כדאי לעמיחי לדעת ולעשות היום?"},
         ],
         max_tokens=150,
     )
-    return f"🌅 בוקר טוב אמיחי\n\n{response.choices[0].message.content}"
+    return f"🌅 בוקר טוב עמיחי\n\n{response.choices[0].message.content}"
 
 
 def main():

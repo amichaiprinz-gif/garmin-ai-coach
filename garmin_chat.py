@@ -22,7 +22,7 @@ def build_context(data: dict) -> str:
         f"  - {a['date']}: {a['type']} | {a['duration_min']} דקות | {a['calories']} קלוריות | דופק: {a.get('avg_hr', 'N/A')}"
         for a in data.get("activities", [])
     )
-    return f"""אתה מאמן כושר אישי של אמיחי. יש לך גישה לנתוני הגרמין שלו.
+    return f"""אתה מאמן כושר אישי של עמיחי. יש לך גישה לנתוני הגרמין שלו.
 ענה בעברית, בצורה קצרה ומעשית.
 
 === נתוני גרמין ({data['date']}) ===
