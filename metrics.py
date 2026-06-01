@@ -183,17 +183,35 @@ def get_metrics(data: dict = None) -> dict:
     }
 
     if data:
-        hrv = data.get("hrv", {})
-        rec = compute_recovery_score(
-            sleep_h=data.get("sleep_hours"),
-            hrv=hrv.get("last_night_avg"),
-            hrv_baseline_low=hrv.get("baseline_low"),
-            hrv_baseline_high=hrv.get("baseline_high"),
-            resting_hr=data.get("resting_hr"),
-            stress_avg=data.get("stress_avg"),
-        )
-        result.update(rec)
-        result["recovery_hebrew"] = RECOVERY_HEBREW.get(rec["recovery_label"], "")
+        # Use Garmin's official Training Readiness score if available
+        tr = data.get("training_readiness", {})
+        garmin_score = tr.get("score")
+        if garmin_score is not None:
+            label = _recovery_label(garmin_score)
+            result["recovery_score"] = garmin_score
+            result["recovery_label"] = label
+            result["recovery_hebrew"] = RECOVERY_HEBREW.get(label, "")
+            result["recovery_source"] = "garmin"
+            result["components"] = {
+                "sleep": tr.get("sleep_score", "?"),
+                "hrv": tr.get("hrv_factor_pct", "?"),
+                "resting_hr": "—",
+                "stress": "—",
+            }
+        else:
+            # Fallback to our custom calculation
+            hrv = data.get("hrv", {})
+            rec = compute_recovery_score(
+                sleep_h=data.get("sleep_hours"),
+                hrv=hrv.get("last_night_avg"),
+                hrv_baseline_low=hrv.get("baseline_low"),
+                hrv_baseline_high=hrv.get("baseline_high"),
+                resting_hr=data.get("resting_hr"),
+                stress_avg=data.get("stress_avg"),
+            )
+            result.update(rec)
+            result["recovery_hebrew"] = RECOVERY_HEBREW.get(rec["recovery_label"], "")
+            result["recovery_source"] = "custom"
 
     return result
 
@@ -213,5 +231,10 @@ if __name__ == "__main__":
     print(f"TSB (מצב):         {m['tsb']} — {m['tsb_hebrew']}")
     print(f"ACWR (יחס עומס):   {m.get('acwr', 'N/A')} — {m['acwr_hebrew']}")
     if "recovery_score" in m:
-        print(f"Recovery Score:    {m['recovery_score']}/100 — {m['recovery_hebrew']}")
-        print(f"  שינה: {m['components']['sleep']}/35 | HRV: {m['components']['hrv']}/35 | דופק: {m['components']['resting_hr']}/20 | סטרס: {m['components']['stress']}/10")
+        src = "(גרמין)" if m.get("recovery_source") == "garmin" else "(חישוב)"
+        print(f"Recovery Score:    {m['recovery_score']}/100 {src} — {m['recovery_hebrew']}")
+        c = m["components"]
+        if m.get("recovery_source") == "garmin":
+            print(f"  שינה: {c['sleep']}/100 | HRV: {c['hrv']}%")
+        else:
+            print(f"  שינה: {c['sleep']}/35 | HRV: {c['hrv']}/35 | דופק: {c['resting_hr']}/20 | סטרס: {c['stress']}/10")

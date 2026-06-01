@@ -87,6 +87,24 @@ def fetch_data(api):
     except Exception as e:
         print(f"  HRV: N/A ({e})")
 
+    # Training Readiness (Garmin's official recovery score)
+    readiness_data = {}
+    try:
+        tr = api.get_training_readiness(today)
+        if tr:
+            r = tr[0]
+            readiness_data = {
+                "score": r.get("score"),
+                "level": r.get("level"),
+                "feedback": r.get("feedbackShort"),
+                "sleep_score": r.get("sleepScore"),
+                "hrv_factor_pct": r.get("hrvFactorPercent"),
+                "recovery_time_h": r.get("recoveryTime"),
+            }
+            print(f"  Training Readiness: {readiness_data['score']} ({readiness_data['level']})")
+    except Exception as e:
+        print(f"  Training Readiness: N/A ({e})")
+
     # Training status / VO2 Max
     vo2_data = {}
     try:
@@ -184,6 +202,7 @@ def fetch_data(api):
         "sleep_deep_min": (s.get("deepSleepSeconds") or 0) // 60,
         "sleep_rem_min": (s.get("remSleepSeconds") or 0) // 60,
         "hrv": hrv_data,
+        "training_readiness": readiness_data,
         "vo2max": vo2_data,
         "activities": detailed_activities,
     }
