@@ -1,181 +1,190 @@
 # -*- coding: utf-8 -*-
 """
-Daily workout message for Bob — sent at 12:00 every day.
-Reads Garmin data, adjusts by Recovery Score, outputs WhatsApp-ready text.
+Daily workout message — reads from weekly_plan.json generated Sunday 19:30.
+Sent daily at 12:00 via OpenClaw.
 """
 import sys, os, json
 from datetime import date
 sys.stdout.reconfigure(encoding='utf-8')
-sys.path.insert(0, os.path.dirname(__file__))
 
-from config import DATA_PATH
-from metrics import get_metrics
-
-# weekday(): 0=Mon 1=Tue 2=Wed 3=Thu 4=Fri 5=Sat 6=Sun
-SCHEDULE = {
-    6: "upper",      # Sunday   — חזה+כתפיים+טריצפס+בטן
-    0: "back",       # Monday   — גב+ביצפס+בטן
-    1: "intervals",  # Tuesday  — אינטרוולים
-    2: "legs",       # Wednesday— רגליים+ישבן+בטן
-    3: "rest",       # Thursday — מנוחה
-    4: "walk",       # Friday   — הליכה
-    5: "long_run",   # Saturday — ריצה ארוכה
-}
+PLAN_CACHE   = os.path.join(os.path.expanduser("~"), "OneDrive", "garmin-data", "weekly_plan.json")
+WORKOUT_CACHE = os.path.join(os.path.expanduser("~"), "OneDrive", "garmin-data", "latest_workout.txt")
 
 DAY_HE = {0:"שני",1:"שלישי",2:"רביעי",3:"חמישי",4:"שישי",5:"שבת",6:"ראשון"}
 
-# Each exercise: (name_he, sets, [reps_s1, reps_s2, reps_s3], rest_sec)
-UPPER = [
-    ("שכיבות שמיכה",                        3, [10, 8, 6],   60),
-    ("שכיבות שמיכה צרות (ידיים קרובות)",    3, [10, 8, 6],   60),
-    ("לחיצת כתפיים עם משקולת — עמידה",      3, [12, 10, 8],  60),
-    ("הרמות צד עם משקולת",                  3, [15, 12, 12], 45),
-    ("הרמות קדמיות עם משקולת",              3, [12, 10, 10], 45),
-    ("פלאנק",                                3, ["45ש","45ש","45ש"], 45),
-    ("כפיפות בטן אופניים",                  3, [20, 20, 15], 45),
-    ("כפיפות בטן הפוכות",                   3, [15, 15, 12], 45),
-]
-
-BACK = [
-    ("משיכת משקולת לגב — יד אחת (כפוף קדימה)", 3, [12, 10, 8],  60),
-    ("הרחבת גב — שוכב על הבטן (סופרמן)",        3, [15, 15, 12], 45),
-    ("ציפור-כלב — ארבע רגליים, יד ורגל מנוגדות",3, [12, 12, 10], 45),
-    ("כפיפות מרפק עם משקולת",                   3, [12, 10, 8],  60),
-    ("כפיפות פטיש עם משקולת",                   3, [12, 12, 10], 60),
-    ("פלאנק",                                    3, ["45ש","45ש","45ש"], 45),
-    ("כפיפות בטן הפוכות",                        3, [15, 15, 12], 45),
-    ("כפיפות בטן אופניים",                       3, [20, 20, 15], 45),
-]
-
-LEGS = [
-    ("סקוואט משקל גוף",                          3, [15, 15, 12], 60),
-    ("סקוואט עם משקולת — מחזיק ביד אחת",         3, [12, 10, 8],  60),
-    ("לאנג' — צעד קדימה, רגל מתחלפת",            3, [12, 12, 10], 60),
-    ("גשר ישבן — שוכב, מרים אגן",                3, [15, 15, 15], 45),
-    ("גשר ישבן רגל אחת",                          3, [12, 12, 10], 45),
-    ("פלאנק",                                     3, ["45ש","45ש","45ש"], 45),
-    ("הרמת רגליים — שוכב על הגב",                3, [15, 15, 12], 45),
-    ("כפיפות בטן אופניים",                        3, [20, 20, 15], 45),
-]
+# ── Exercise definitions ───────────────────────────────────────────────────
+# (name_he, rest_sec, reps_3sets, reps_2sets)
+EXERCISES = {
+    "strength_upper": [
+        ("שכיבות שמיכה",                             60, [10,8,6],  [8,6]),
+        ("שכיבות שמיכה צרות (ידיים צמודות לגוף)",    60, [10,8,6],  [8,6]),
+        ("לחיצת כתפיים עם משקולת — עמידה",           60, [12,10,8], [10,8]),
+        ("הרמות צד עם משקולת",                       45, [15,12,12],[12,10]),
+        ("הרמות קדמיות עם משקולת",                   45, [12,10,10],[10,8]),
+        ("פלאנק",                                     45, ["45ש","45ש","45ש"],["45ש","45ש"]),
+        ("כפיפות בטן אופניים",                       45, [20,20,15], [20,15]),
+        ("כפיפות בטן הפוכות",                        45, [15,15,12], [15,12]),
+    ],
+    "strength_back": [
+        ("משיכת משקולת לגב — יד אחת (כפוף קדימה)",  60, [12,10,8], [10,8]),
+        ("סופרמן (שוכב על הבטן, מרים ידיים ורגליים)", 45, [15,15,12],[15,12]),
+        ("ציפור-כלב (ארבע רגליים, יד ורגל מנוגדות)", 45, [12,12,10],[12,10]),
+        ("כפיפות מרפק עם משקולת",                    60, [12,10,8], [10,8]),
+        ("כפיפות פטיש עם משקולת",                    60, [12,12,10],[12,10]),
+        ("פלאנק",                                     45, ["45ש","45ש","45ש"],["45ש","45ש"]),
+        ("כפיפות בטן הפוכות",                        45, [15,15,12], [15,12]),
+        ("כפיפות בטן אופניים",                       45, [20,20,15], [20,15]),
+    ],
+    "strength_legs": [
+        ("סקוואט משקל גוף",                           60, [15,15,12],[15,12]),
+        ("סקוואט עם משקולת — מחזיק ביד",              60, [12,10,8], [10,8]),
+        ("לאנג' — צעד קדימה, רגל מתחלפת",             60, [12,12,10],[12,10]),
+        ("גשר ישבן (שוכב על הגב, מרים אגן)",          45, [15,15,15],[15,15]),
+        ("גשר ישבן — רגל אחת",                        45, [12,12,10],[12,10]),
+        ("פלאנק",                                      45, ["45ש","45ש","45ש"],["45ש","45ש"]),
+        ("הרמת רגליים — שוכב על הגב",                 45, [15,15,12],[15,12]),
+        ("כפיפות בטן אופניים",                        45, [20,20,15],[20,15]),
+    ],
+    "strength_arms": [
+        ("כפיפות מרפק עם משקולת",                    60, [12,10,8], [10,8]),
+        ("כפיפות פטיש עם משקולת",                    60, [12,12,10],[12,10]),
+        ("הרחקת זרוע מאחורה עם משקולת (טריצפס)",     60, [12,10,8], [10,8]),
+        ("שכיבות שמיכה צרות (ידיים צמודות לגוף)",    60, [10,8,6],  [8,6]),
+        ("פלאנק",                                     45, ["45ש","45ש","45ש"],["45ש","45ש"]),
+        ("פלאנק צד — כל צד",                         45, ["30ש","30ש","30ש"],["30ש","30ש"]),
+        ("כפיפות בטן",                                45, [20,20,15],[20,15]),
+        ("כפיפות בטן הפוכות",                        45, [15,15,12],[15,12]),
+        ("V-Sit (יושב, מרים רגליים וגו' יחד)",        45, [12,10,10],[10,8]),
+    ],
+}
 
 NUTRITION = {
-    "upper": {
-        "before": "🍌 שעה לפני: בננה + חופן אגוזים, או פרוסת לחם עם חמאת בוטנים",
-        "after":  "🥚 תוך 30 דקות: 3 ביצים קשות / חזה עוף + אורז / גביע קוטג' עם פרי",
-    },
-    "back": {
-        "before": "🍌 שעה לפני: בננה + חופן אגוזים, או פרוסת לחם עם חמאת בוטנים",
-        "after":  "🥚 תוך 30 דקות: 3 ביצים קשות / טונה + לחם / גביע קוטג' עם פרי",
-    },
-    "legs": {
-        "before": "🍚 שעה לפני: פחמימות קצת יותר — אורז + קצת חלבון, או לחם עם גבינה",
-        "after":  "🥩 תוך 30 דקות: חלבון + פחמימות — עוף עם תפוח אדמה / קוטג' עם בננה",
-    },
-    "intervals": {
-        "before": "🍌 45 דקות לפני: בננה / תמרים / לחם עם דבש — פחמימות מהירות בלבד",
-        "after":  "🥛 תוך 20 דקות: שייק חלבון + בננה, או חלב + פרי",
-    },
-    "long_run": {
-        "before": "🍚 שעה וחצי לפני: ארוחה עם פחמימות — אורז, לחם, שיבולת שועל",
-        "after":  "🥩 תוך 30 דקות: חלבון + פחמימות — עוף עם אורז / שייק חלבון",
-    },
-    "walk": {
-        "before": "☕ אין חובה — אפשר לאכול רגיל",
-        "after":  "💧 שתייה מרובה, ארוחה רגילה",
-    },
+    "strength_upper": (
+        "🍌 שעה לפני: בננה + חופן אגוזים / פרוסת לחם עם חמאת בוטנים",
+        "🥚 תוך 30 דקות: 3 ביצים / חזה עוף + אורז / גביע קוטג' עם פרי",
+    ),
+    "strength_back": (
+        "🍌 שעה לפני: בננה + חופן אגוזים / פרוסת לחם עם חמאת בוטנים",
+        "🥚 תוך 30 דקות: 3 ביצים / טונה + לחם / גביע קוטג' עם פרי",
+    ),
+    "strength_legs": (
+        "🍚 שעה לפני: אורז + קצת חלבון / לחם עם גבינה — יותר פחמימות",
+        "🥩 תוך 30 דקות: עוף עם תפוח אדמה / קוטג' עם בננה",
+    ),
+    "strength_arms": (
+        "🍌 שעה לפני: בננה + חופן אגוזים",
+        "🥚 תוך 30 דקות: 3 ביצים / טונה + לחם",
+    ),
+    "intervals": (
+        "🍌 45 דקות לפני: בננה / תמרים / לחם עם דבש — פחמימות מהירות בלבד",
+        "🥛 תוך 20 דקות: שייק חלבון + בננה / חלב + פרי",
+    ),
+    "long_run": (
+        "🍚 שעה וחצי לפני: ארוחה עם פחמימות — אורז / לחם / שיבולת שועל",
+        "🥩 תוך 30 דקות: עוף עם אורז / שייק חלבון",
+    ),
+    "walk": (
+        "☕ אין חובה מיוחדת — אכול רגיל",
+        "💧 שתייה מרובה",
+    ),
 }
 
 
-def load_data():
-    if not os.path.exists(DATA_PATH):
-        return None
-    with open(DATA_PATH, encoding="utf-8") as f:
-        return json.load(f)
-
-
-def format_exercises(exercises, sets_override=None):
+def format_strength(wtype: str, sets: int) -> str:
+    exercises = EXERCISES.get(wtype, [])
     lines = []
-    for name, sets, reps, rest in exercises:
-        s = sets_override or sets
-        if isinstance(reps[0], str):
-            reps_str = " / ".join(reps[:s])
-        else:
-            reps_str = " / ".join(str(r) for r in reps[:s])
-        lines.append(f"• {name}: {s} סטים × {reps_str} חזרות | מנוחה {rest}ש'")
+    for name, rest, reps3, reps2 in exercises:
+        reps = reps3 if sets == 3 else reps2
+        reps_str = " / ".join(str(r) for r in reps[:sets])
+        lines.append(f"• {name}\n  {sets} סטים × {reps_str} חזרות | מנוחה {rest} שניות")
     return "\n".join(lines)
 
 
-def build_message(wtype, data, recovery):
-    today = date.today()
-    day_he = DAY_HE[today.weekday()]
+def format_run(wtype: str, entry: dict) -> str:
+    if wtype == "intervals":
+        n = entry.get("intervals", 4)
+        return (f"• חימום: 10 דקות ריצה קלה (דופק 115-130)\n"
+                f"• {n} × 400 מטר — דופק ~150-165 | מנוחה 90 שניות בין חזרות\n"
+                f"• קירור: 10 דקות ריצה קלה")
+    else:
+        mins = entry.get("run_min", 45)
+        return (f"• חימום: 5 דקות הליכה מהירה\n"
+                f"• {mins - 10} דקות ריצה — דופק 120-145 (קצב שנוח לדבר בו)\n"
+                f"• קירור: 5 דקות הליכה")
 
-    # Adjust sets based on recovery
-    if recovery >= 70:
-        sets_note = "💪 התאוששות טובה — תן הכל"
-        sets_override = 3
+
+def build_message(entry: dict, recovery: int) -> str:
+    wtype = entry["type"]
+    label = entry["label"]
+    day   = entry["weekday"]
+    sets  = entry.get("sets", 3)
+    date_fmt = entry.get("date_fmt", "")
+
+    if recovery >= 75:
+        rec_line = f"Recovery {recovery}/100 — גוף מוכן 💪 ({sets} סטים)"
     elif recovery >= 50:
-        sets_note = "👍 התאוששות בינונית — 3 סטים, שמור על טכניקה"
-        sets_override = 3
+        rec_line = f"Recovery {recovery}/100 — בסדר 👍 ({sets} סטים)"
     else:
-        sets_note = "⚠️ התאוששות נמוכה — 2 סטים, אל תדחוף יותר מדי"
-        sets_override = 2
+        rec_line = f"Recovery {recovery}/100 — התאוששות נמוכה ⚠️ ({sets} סטים — לא לדחוף)"
 
-    bb = data.get("body_battery_current", "?") if data else "?"
-    hrv = (data.get("hrv") or {}).get("last_night_avg", "?") if data else "?"
+    header = f"🏋️ *אימון יום {day} {date_fmt}*\n{rec_line}\n\n*{label}*\n"
 
-    header = f"🏋️ *אימון יום {day_he}*\n📊 Body Battery: {bb} | HRV: {hrv} | Recovery: {recovery}/100\n{sets_note}\n"
-
-    if wtype == "upper":
-        body = f"*חזה + כתפיים + טריצפס + בטן*\n\n" + format_exercises(UPPER, sets_override)
-    elif wtype == "back":
-        body = f"*גב + ביצפס + בטן*\n\n" + format_exercises(BACK, sets_override)
-    elif wtype == "legs":
-        body = f"*רגליים + ישבן + בטן*\n\n" + format_exercises(LEGS, sets_override)
-    elif wtype == "intervals":
-        if recovery >= 65:
-            n, note = 6, ""
-        elif recovery >= 40:
-            n, note = 4, "\n_התאוששות בינונית — 4 חזרות במקום 6_"
-        else:
-            n, note = 3, "\n_התאוששות נמוכה — 3 חזרות, אל תדחוף בחזרה האחרונה_"
-        body = f"🏃 *אינטרוולים*{note}\n\n• חימום: 10 דקות ריצה קלה (דופק 115-130)\n• {n} × 400 מטר @ ~85% — דופק 150-160 | מנוחה 90 שניות בין חזרות\n• קירור: 10 דקות ריצה קלה"
-    elif wtype == "long_run":
-        minutes = 55 if recovery >= 65 else 40
-        body = f"🏃 *ריצה ארוכה*\n\n• חימום 5 דקות\n• {minutes - 10} דקות ריצה — דופק 120-145\n• קירור 5 דקות\n\n_שמור על קצב שנוח לדבר בו_"
+    if wtype in EXERCISES:
+        body = format_strength(wtype, sets)
+    elif wtype in ("intervals", "long_run"):
+        body = format_run(wtype, entry)
     elif wtype == "walk":
-        body = "🚶 *הליכה*\n\n• 35-45 דקות — דופק מתחת ל-110\n• קצב נינוח, אוויר טרי"
+        body = "• 35-45 דקות הליכה — דופק מתחת ל-110\n• קצב נינוח, לא לדחוף"
     else:
-        return None  # Rest day — no message
+        return None  # rest day
 
-    nut = NUTRITION.get(wtype, {})
-    nutrition = f"\n\n🍽️ *תזונה*\n{nut.get('before','')}\n{nut.get('after','')}"
+    before, after = NUTRITION.get(wtype, ("", ""))
+    nutrition = f"\n\n🍽️ *תזונה*\n{before}\n{after}"
 
-    return header + "\n" + body + nutrition
+    return header + body + nutrition
 
 
-WORKOUT_CACHE = os.path.join(os.path.expanduser("~"), "OneDrive", "garmin-data", "latest_workout.txt")
+def load_today_entry() -> tuple:
+    """Returns (entry_dict, recovery_score) for today from weekly plan."""
+    today = date.today().isoformat()
+    if not os.path.exists(PLAN_CACHE):
+        return None, 60
+
+    with open(PLAN_CACHE, encoding="utf-8") as f:
+        cache = json.load(f)
+
+    plan = cache.get("plan", {})
+    entry = plan.get(today)
+    recovery = cache.get("load", {}).get("recovery", 60)
+
+    # Try to get fresh recovery from data file
+    try:
+        data_path = os.path.join(os.path.expanduser("~"), "OneDrive", "garmin-data", "latest_data.json")
+        with open(data_path, encoding="utf-8") as f:
+            data = json.load(f)
+        tr = data.get("training_readiness", {})
+        if tr.get("score"):
+            recovery = tr["score"]
+    except Exception:
+        pass
+
+    return entry, recovery
 
 
 def main():
-    wtype = SCHEDULE.get(date.today().weekday())
-    if wtype == "rest":
-        text = "😴 יום מנוחה — אין אימון היום. גוף שיודע לנוח מתחזק יותר."
-    else:
-        data = load_data()
-        try:
-            m = get_metrics(data) if data else {}
-            recovery = m.get("recovery_score", 60)
-        except Exception:
-            recovery = 60
-        text = build_message(wtype, data, recovery) or ""
+    entry, recovery = load_today_entry()
 
-    # Save to cache
-    try:
-        os.makedirs(os.path.dirname(WORKOUT_CACHE), exist_ok=True)
-        with open(WORKOUT_CACHE, "w", encoding="utf-8") as f:
-            f.write(text)
-    except Exception:
-        pass
+    if entry is None:
+        # No weekly plan yet — show message
+        text = "⚠️ אין תכנית שבועית — בוב מכין בכל ראשון ב-19:30"
+    elif entry["type"] in ("rest",):
+        text = "😴 יום מנוחה — הגוף בונה שריר בזמן מנוחה, לא בזמן אימון."
+    else:
+        text = build_message(entry, recovery) or "😴 יום מנוחה"
+
+    os.makedirs(os.path.dirname(WORKOUT_CACHE), exist_ok=True)
+    with open(WORKOUT_CACHE, "w", encoding="utf-8") as f:
+        f.write(text)
     print(text)
 
 
