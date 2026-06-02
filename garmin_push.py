@@ -198,7 +198,7 @@ WEEKLY = {
     2: ("strength_legs",  "שיקום שוק — פיזיו"),   # physio program
     3: ("strength_arms",  "בטן+ידיים"),
     4: ("walk",           "הליכה קלה"),
-    5: ("long_run",       "ריצה קלה קצרה"),       # 1 easy run/week max
+    5: ("strength_legs",  "שיקום שוק — פיזיו"),   # no running until shin heals
 }
 
 
