@@ -117,10 +117,10 @@ def build_system_prompt(data: dict) -> str:
 
 === נתוני יום ({data['date']}) ===
 צעדים: {data.get('steps', 'N/A')}
-קלוריות: {data.get('calories', 'N/A')}
-סטרס ממוצע: {data.get('stress', 'N/A')}
-Body Battery: {data.get('body_battery', 'N/A')}
-דופק מנוחה: {data.get('resting_hr', 'N/A')} bpm
+קלוריות: {data.get('calories_total', 'N/A')}
+סטרס ממוצע: {data.get('stress_avg', 'N/A')}
+Body Battery: {data.get('body_battery_current', 'N/A')} (גבוה={data.get('body_battery_highest','?')}, קימה={data.get('body_battery_at_wake','?')})
+דופק מנוחה: {data.get('resting_hr', 'N/A')} bpm (ממוצע 7י: {data.get('resting_hr_7day_avg','N/A')})
 
 === שינה אמש ===
 משך: {data.get('sleep_hours', 'N/A')} שעות | ציון: {data.get('sleep_score', 'N/A')}
