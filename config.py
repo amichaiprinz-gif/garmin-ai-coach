@@ -10,10 +10,12 @@ if _env.exists():
             k, v = line.split("=", 1)
             os.environ.setdefault(k.strip(), v.strip())
 
-GROQ_API_KEY   = os.environ["GROQ_API_KEY"]
-SUPABASE_URL   = os.environ["SUPABASE_URL"]
-SUPABASE_KEY   = os.environ["SUPABASE_KEY"]
-GARMIN_EMAIL   = os.environ["GARMIN_EMAIL"]
-GARMIN_PASSWORD = os.environ["GARMIN_PASSWORD"]
-TOKEN_PATH     = os.path.expanduser("~/.garmin_tokens/session.json")
-DATA_PATH      = os.path.join(os.path.expanduser("~"), "OneDrive", "garmin-data", "latest_data.json")
+GROQ_API_KEY        = os.environ["GROQ_API_KEY"]
+SUPABASE_URL        = os.environ["SUPABASE_URL"]
+SUPABASE_KEY        = os.environ["SUPABASE_KEY"]
+GARMIN_EMAIL        = os.environ["GARMIN_EMAIL"]
+GARMIN_PASSWORD     = os.environ["GARMIN_PASSWORD"]
+HOMEBASE_API_URL    = os.environ.get("HOMEBASE_API_URL", "")
+HOMEBASE_API_TOKEN  = os.environ.get("HOMEBASE_API_TOKEN", "")
+TOKEN_PATH          = os.path.expanduser("~/.garmin_tokens/session.json")
+DATA_PATH           = os.path.join(os.path.expanduser("~"), "OneDrive", "garmin-data", "latest_data.json")

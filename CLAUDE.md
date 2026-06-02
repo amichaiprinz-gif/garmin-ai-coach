@@ -1,5 +1,16 @@
 # Garmin AI Coach — הוראות לקלוד
 
+## לפני הכל — משוך קוד עדכני מ-GitHub
+
+**תמיד תריץ את זה לפני כל עבודה:**
+```
+cd C:\Users\amich\Projects\garmin
+git pull origin main
+```
+אם יש שגיאת merge — תריץ `git stash` ואז `git pull origin main`.
+
+---
+
 ## מה המערכת הזאת עושה
 מושכת נתוני כושר מגרמין של עמיחי ומייצרת דוח שבועי + עונה על שאלות בזמן אמת.
 

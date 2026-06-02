@@ -10,13 +10,13 @@ Usage:
   python bob_garmin.py push      → push this week's workouts to Garmin watch
 """
 
-import sys, os, json
+import sys, os, json, requests
 from groq import Groq
 from supabase import create_client
 from metrics import get_metrics
 from weather import get_weather, weather_summary
 
-from config import GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY, DATA_PATH
+from config import GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY, DATA_PATH, HOMEBASE_API_URL, HOMEBASE_API_TOKEN
 
 client = Groq(api_key=GROQ_API_KEY)
 sb = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -52,11 +52,12 @@ def load_history() -> str:
 
 
 def load_workout_feedback() -> str:
+    if not HOMEBASE_API_URL:
+        return ""
     try:
-        import requests
         r = requests.get(
-            "https://fantastic-waddle-coral.vercel.app/api/bot/memory",
-            headers={"Authorization": "Bearer homebase-bot-2025"},
+            HOMEBASE_API_URL,
+            headers={"Authorization": f"Bearer {HOMEBASE_API_TOKEN}"},
             timeout=5
         )
         items = r.json()
