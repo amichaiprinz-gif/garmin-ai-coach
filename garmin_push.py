@@ -136,12 +136,13 @@ BACK_EXERCISES = [
     ("CURL",            "HAMMER_CURL",                     12),  # 7.5kg
 ]
 
+# Shin rehab program — per physiotherapist instructions (June 2026)
+# Goal: strengthen lower leg before returning to running
 LEG_EXERCISES = [
-    ("SQUAT",           "BODYWEIGHT_SQUAT",               15),  # bodyweight
-    ("SQUAT",           "DUMBBELL_SQUAT",                 12),  # 7.5kg held
-    ("LUNGE",           "BODYWEIGHT_WALKING_LUNGE",       12),  # bodyweight
-    ("HIP_RAISE",       "GLUTE_BRIDGE",                   15),  # bodyweight
-    ("HIP_RAISE",       "SINGLE_LEG_GLUTE_BRIDGE",        12),  # bodyweight
+    ("SQUAT",       "SQUAT",              30),  # wall squat isometric — 30 seconds
+    ("CALF_RAISE",  "SINGLE_LEG_CALF_RAISE", 15),  # single-leg calf raise, each leg
+    ("HIP_RAISE",   "GLUTE_BRIDGE",       12),  # bridge
+    ("WALK",        "HEEL_WALK",          60),  # heel walk — 60 seconds
 ]
 
 ARMS_EXERCISES = [
@@ -187,14 +188,17 @@ def build_walk(duration_min=35):
 
 # ── Push week ──────────────────────────────────────────────────────────────
 
+# SHIN REHAB MODE (June 2026) — per physiotherapist
+# Reduced running, focus on leg strengthening 1-2 weeks
+# Then return to full program
 WEEKLY = {
     6: ("strength_upper", "חזה+כתפיים+טריצפס+בטן"),
     0: ("strength_back",  "גב+ביצפס+בטן"),
-    1: ("interval_run",   "אינטרוולים"),
-    2: ("strength_legs",  "רגליים+ישבן+בטן"),
+    1: ("walk",           "הליכה קלה"),          # was: intervals — no running
+    2: ("strength_legs",  "שיקום שוק — פיזיו"),   # physio program
     3: ("strength_arms",  "בטן+ידיים"),
     4: ("walk",           "הליכה קלה"),
-    5: ("long_run",       "ריצה ארוכה"),
+    5: ("long_run",       "ריצה קלה קצרה"),       # 1 easy run/week max
 }
 
 
