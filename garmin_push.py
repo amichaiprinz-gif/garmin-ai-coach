@@ -138,11 +138,12 @@ BACK_EXERCISES = [
 
 # Shin rehab program — per physiotherapist instructions (June 2026)
 # Goal: strengthen lower leg before returning to running
+# Shin rehab program — per physiotherapist instructions (June 2026)
 LEG_EXERCISES = [
-    ("SQUAT",       "SQUAT",              30),  # wall squat isometric — 30 seconds
-    ("CALF_RAISE",  "SINGLE_LEG_CALF_RAISE", 15),  # single-leg calf raise, each leg
-    ("HIP_RAISE",   "GLUTE_BRIDGE",       12),  # bridge
-    ("WALK",        "HEEL_WALK",          60),  # heel walk — 60 seconds
+    ("SQUAT",      "WALL_SQUAT",              30),  # wall squat isometric — 30 seconds
+    ("CALF_RAISE", "SINGLE_LEG_CALF_RAISE",   15),  # single-leg calf raise, each leg
+    ("HIP_RAISE",  "GLUTE_BRIDGE",            12),  # bridge 4×12
+    ("CORE",       "HEEL_WALK",               60),  # heel walk — 60 seconds
 ]
 
 ARMS_EXERCISES = [
