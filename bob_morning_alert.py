@@ -26,8 +26,11 @@ def needs_alert(data: dict) -> bool:
     bb = data.get("body_battery_current", 99)
     stress = data.get("stress_avg", 0)
 
+    # sleep=0 means watch wasn't worn — not a real alert
+    sleep_alert = 0 < sleep < 6
+
     return (
-        sleep < 6
+        sleep_alert
         or (hrv and hrv < 45)
         or bb < 40
         or stress > 60
@@ -39,7 +42,7 @@ def generate_alert(data: dict) -> str:
     issues = []
 
     sleep = data.get("sleep_hours", 0)
-    if sleep < 6:
+    if 0 < sleep < 6:
         issues.append(f"שינה {sleep} שעות בלבד")
 
     hrv_val = hrv.get("last_night_avg")
