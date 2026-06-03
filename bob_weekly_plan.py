@@ -25,13 +25,14 @@ DAY_HE = {0:"שני",1:"שלישי",2:"רביעי",3:"חמישי",4:"שישי",5
 
 # weekday(): 0=Mon 1=Tue 2=Wed 3=Thu 4=Fri 5=Sat 6=Sun
 SCHEDULE = {
+    # SHIN REHAB (June 2026) — no running until shin heals
     6: ("strength_upper", "חזה + כתפיים + טריצפס + בטן"),
     0: ("strength_back",  "גב + ביצפס + בטן"),
-    1: ("intervals",      "ריצת אינטרוולים"),
-    2: ("strength_legs",  "רגליים + ישבן + בטן"),
+    1: ("walk",           "הליכה קלה"),           # was intervals
+    2: ("strength_legs",  "שיקום שוק — פיזיו"),
     3: ("strength_arms",  "בטן + ידיים"),
     4: ("walk",           "הליכה קלה"),
-    5: ("long_run",       "ריצה ארוכה"),
+    5: ("strength_legs",  "שיקום שוק — פיזיו"),   # was long run
 }
 
 
