@@ -37,6 +37,17 @@ def load_garmin():
         return {}
 
 
+def garmin_freshness_warning():
+    try:
+        mtime = os.path.getmtime(DATA_PATH)
+        age_h = (datetime.datetime.now().timestamp() - mtime) / 3600
+        if age_h > 24:
+            return f"⚠️ נתוני גרמין לא עודכנו ({int(age_h)} שעות) — סנכרן OneDrive"
+    except Exception:
+        return "⚠️ קובץ גרמין לא נמצא — בדוק OneDrive"
+    return None
+
+
 def get_calendar(days_ahead=0):
     try:
         res = subprocess.run(
@@ -150,13 +161,20 @@ def generate_brief(context):
 
 
 def main():
+    freshness_warn = garmin_freshness_warning()
+
     garmin   = load_garmin()
     briefing = fetch_json(BRIEFING_API, headers={"Authorization": "Bearer homebase-bot-2025"})
     gcal     = get_calendar(days_ahead=0)
     weather  = fetch_json(WEATHER_URL)
 
     context = format_context(garmin, briefing, gcal, weather)
-    brief   = generate_brief(context)
+    if freshness_warn:
+        context = freshness_warn + "\n" + context
+
+    brief = generate_brief(context)
+    if freshness_warn:
+        brief = freshness_warn + "\n" + brief
     print(brief)
 
 

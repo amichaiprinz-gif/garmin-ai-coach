@@ -60,7 +60,7 @@ briefing = fetch_json(
 
 try:
     res = subprocess.run(
-        ["python", r"C:\Users\amich\.openclaw\scripts\gcal.py", "1"],
+        ["python", r"C:\Users\amich\Projects\garmin\bob-scripts\gcal.py", "1"],
         capture_output=True, text=True, timeout=15, encoding="utf-8"
     )
     raw = res.stdout.strip()

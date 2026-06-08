@@ -10,7 +10,7 @@ function Log($msg) {
 New-Item -ItemType Directory -Force -Path (Split-Path $logFile) | Out-Null
 Log "=== Bob Startup $(Get-Date -Format 'yyyy-MM-dd') ==="
 
-$procs = Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*openclaw*" }
+$procs = Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*clawdbot*" -or $_.CommandLine -like "*openclaw*" }
 
 if ($procs) {
     $count = ($procs | Measure-Object).Count
@@ -26,6 +26,6 @@ if ($procs) {
 }
 
 Log "Starting Bob..."
-$openclaw = "C:\Users\amich\AppData\Roaming\npm\openclaw.cmd"
-Start-Process -FilePath "cmd.exe" -ArgumentList "/c $openclaw gateway --force" -WorkingDirectory "C:\Users\amich" -WindowStyle Normal
+$openclaw = "C:\Users\amich\AppData\Roaming\npm\clawdbot.cmd"
+Start-Process -FilePath "cmd.exe" -ArgumentList "/c $openclaw gateway" -WorkingDirectory "C:\Users\amich" -WindowStyle Normal
 Log "Bob started"
