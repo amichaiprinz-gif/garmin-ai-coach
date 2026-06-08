@@ -26,6 +26,6 @@ if ($procs) {
 }
 
 Log "Starting Bob..."
-$openclaw = "C:\Users\amich\AppData\Roaming\npm\clawdbot.cmd"
-Start-Process -FilePath "cmd.exe" -ArgumentList "/c $openclaw gateway" -WorkingDirectory "C:\Users\amich" -WindowStyle Normal
+$openclaw = "C:\Users\amich\AppData\Roaming\npm\openclaw.cmd"
+Start-Process -FilePath "cmd.exe" -ArgumentList "/c $openclaw gateway --force" -WorkingDirectory "C:\Users\amich" -WindowStyle Normal
 Log "Bob started"
