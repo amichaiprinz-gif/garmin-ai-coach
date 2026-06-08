@@ -1,8 +1,10 @@
 ---
 name: garmin-morning-alert
-description: Daily morning check of Garmin data. Sends a WhatsApp alert only if something is off — low sleep, low HRV, low Body Battery, or high stress. Silent if everything is fine.
+description: Manual fitness alert check — sends a WhatsApp alert only if something is off (low sleep, low HRV, low Body Battery, high stress). Silent if everything is fine. Daily briefing at 07:15 covers this automatically; use this for manual spot-checks.
 triggers:
-  - schedule: "30 7 * * *"
+  - "התראת כושר"
+  - "fitness alert"
+  - "בדוק כושר"
 ---
 
 Run the following Python script:
