@@ -5,7 +5,7 @@ triggers:
   - "בריף בוקר"
   - "morning briefing"
   - "מה הבוקר"
-  - schedule: "15 7 * * *"
+  - schedule: "15 9 * * *"
 ---
 
 Run the following Python script:
