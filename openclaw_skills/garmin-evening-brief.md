@@ -1,12 +1,12 @@
 ---
 name: garmin-evening-brief
-description: Daily evening briefing at 20:00 — always sends. Summarizes today (steps, activity, stress) and prepares for tomorrow (calendar, workout plan, open tasks).
+description: Daily evening briefing at 20:20 — always sends. Summarizes today (steps, activity, stress) and prepares for tomorrow (calendar, workout plan, open tasks).
 triggers:
   - "בריף ערב"
   - "evening brief"
   - "מה מחר"
   - "סיכום יום"
-  - schedule: "0 20 * * *"
+  - schedule: "20 20 * * *"
 ---
 
 Run the following Python script:
