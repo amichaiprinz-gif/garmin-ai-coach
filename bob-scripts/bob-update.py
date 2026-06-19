@@ -6,17 +6,28 @@ import sys, subprocess, os
 sys.stdout.reconfigure(encoding="utf-8")
 
 REPO = r"C:\Users\amich\Projects\garmin"
+HOMEBASE_REPO = r"C:\Users\amich\Projects\fantastic-waddle"
 TASK_NAME = "BobAutoUpdate"
 BAT_PATH = r"C:\Users\amich\Projects\garmin\bob-scripts\bob-update.bat"
 MANUAL = len(sys.argv) > 1 and sys.argv[1] == "--manual"
 
-# Git pull
-result = subprocess.run(
-    ["git", "pull", "origin", "main"],
-    cwd=REPO, capture_output=True, text=True, encoding="utf-8"
-)
-pull_out = (result.stdout + result.stderr).strip()
-has_changes = "Already up to date" not in pull_out and result.returncode == 0
+def pull(repo, branch="main"):
+    r = subprocess.run(
+        ["git", "pull", "origin", branch],
+        cwd=repo, capture_output=True, text=True, encoding="utf-8"
+    )
+    return (r.stdout + r.stderr).strip(), r.returncode == 0
+
+# Git pull — garmin-ai-coach
+pull_out, ok = pull(REPO)
+has_changes = "Already up to date" not in pull_out and ok
+
+# Git pull — fantastic-waddle (SKILL.md, SKILL-cron.md)
+if os.path.isdir(HOMEBASE_REPO):
+    hb_out, hb_ok = pull(HOMEBASE_REPO, "master")
+    if hb_ok and "Already up to date" not in hb_out:
+        has_changes = True
+        pull_out += f"\n[HomeBase] {hb_out}"
 
 # Ensure Task Scheduler task exists (idempotent)
 check = subprocess.run(
