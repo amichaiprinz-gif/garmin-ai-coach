@@ -5,7 +5,8 @@ Combines Garmin fitness data + calendar + tasks + weather into a Hebrew WhatsApp
 import sys, os, json, subprocess, urllib.request, datetime
 sys.stdout.reconfigure(encoding="utf-8")
 from groq import Groq
-from config import GROQ_API_KEY, DATA_PATH
+from supabase import create_client
+from config import GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY
 
 BRIEFING_API = "https://fantastic-waddle-coral.vercel.app/api/bot/briefing"
 GCAL_PATH    = r"C:\Users\amich\Projects\garmin\bob-scripts\gcal.py"
@@ -18,6 +19,7 @@ WEATHER_URL  = (
 )
 
 client = Groq(api_key=GROQ_API_KEY)
+sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def fetch_json(url, headers=None):
@@ -30,21 +32,55 @@ def fetch_json(url, headers=None):
 
 
 def load_garmin():
+    """Load today's Garmin data from Supabase (garmin_daily + garmin_activities)."""
     try:
-        with open(DATA_PATH, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
+        today = datetime.date.today().isoformat()
+        # Get daily stats — prefer today, fall back to most recent row
+        daily_res = sb.table("garmin_daily").select("*").eq("date", today).execute()
+        if not daily_res.data:
+            daily_res = sb.table("garmin_daily").select("*").order("date", desc=True).limit(1).execute()
+        if not daily_res.data:
+            return {}
+        row = daily_res.data[0]
+
+        # Reconstruct hrv sub-dict
+        row["hrv"] = {
+            "weekly_avg": row.pop("hrv_weekly_avg", None),
+            "last_night_avg": row.pop("hrv_last_night", None),
+            "status": row.pop("hrv_status_text", None),
+        }
+        # Reconstruct training_readiness placeholder (not stored in Supabase)
+        row.setdefault("training_readiness", {})
+
+        # Fetch activities
+        acts_res = sb.table("garmin_activities").select("*").eq("date", row["date"]).execute()
+        activities = []
+        for a in (acts_res.data or []):
+            hr_zones_raw = a.get("hr_zones")
+            if isinstance(hr_zones_raw, str):
+                try:
+                    a["hr_zones"] = json.loads(hr_zones_raw)
+                except Exception:
+                    a["hr_zones"] = {}
+            activities.append(a)
+        row["activities"] = activities
+        return row
+    except Exception as e:
         return {}
 
 
-def garmin_freshness_warning():
+def garmin_freshness_warning(garmin):
+    """Return a warning string if Garmin data is stale, else None."""
+    date_str = garmin.get("date")
+    if not date_str:
+        return "⚠️ נתוני גרמין לא נמצאו ב-Supabase"
     try:
-        mtime = os.path.getmtime(DATA_PATH)
-        age_h = (datetime.datetime.now().timestamp() - mtime) / 3600
-        if age_h > 24:
-            return f"⚠️ נתוני גרמין לא עודכנו ({int(age_h)} שעות) — סנכרן OneDrive"
+        data_date = datetime.date.fromisoformat(date_str)
+        age_days = (datetime.date.today() - data_date).days
+        if age_days >= 1:
+            return f"⚠️ נתוני גרמין לא עודכנו ({age_days} ימים) — בדוק ש-GarminDailySync רץ"
     except Exception:
-        return "⚠️ קובץ גרמין לא נמצא — בדוק OneDrive"
+        return "⚠️ תאריך נתוני גרמין לא תקין"
     return None
 
 
@@ -164,9 +200,9 @@ def generate_brief(context):
 
 
 def main():
-    freshness_warn = garmin_freshness_warning()
-
     garmin   = load_garmin()
+    freshness_warn = garmin_freshness_warning(garmin)
+
     briefing = fetch_json(BRIEFING_API, headers={"Authorization": "Bearer homebase-bot-2025"})
     gcal     = get_calendar(days_ahead=0)
     weather  = fetch_json(WEATHER_URL)
