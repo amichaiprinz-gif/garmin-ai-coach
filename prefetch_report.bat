@@ -2,4 +2,3 @@
 set PYTHONUTF8=1
 cd /d C:\Users\amich\Projects\garmin
 git pull origin main >> C:\Users\amich\.openclaw\logs\garmin-prefetch.log 2>&1
-C:\Users\amich\AppData\Local\Programs\Python\Python313\python.exe bob_weekly_plan.py >> C:\Users\amich\.openclaw\logs\garmin-prefetch.log 2>&1

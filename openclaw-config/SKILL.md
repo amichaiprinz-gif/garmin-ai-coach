@@ -75,6 +75,6 @@ Lang: Hebrew. Base: `https://fantastic-waddle-coral.vercel.app/api/bot/` · Auth
 
 **דוח שבועי / "דוח גרמין":** `exec: python C:\Users\amich\Projects\garmin\bob_whatsapp_report.py send` → שלח פלט verbatim
 
-**דחיפת אימונים לשעון / "שלח אימונים לגרמין":** `exec: python C:\Users\amich\Projects\garmin\bob_garmin.py push` → שלח פלט verbatim
+**דחיפת אימונים לשעון:** לא פעיל — עמיחי בונה את האימונים שלו בעצמו. אל תדחוף אימונים לגרמין ואל תציע זאת.
 
 **TSB פירוש:** מעל 25=תת-אימון · 5-25=שיא · 10-↓ עד 5=אופטימלי · 30-↓ עד 10-=עומס · מתחת 30-=סיכון

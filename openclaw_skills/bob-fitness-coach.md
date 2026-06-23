@@ -34,7 +34,7 @@ with open(os.path.expanduser("~/OneDrive/garmin-data/latest_data.json"), encodin
   - BB 40-70 + Readiness 50-75: Moderate — complete the plan as written
   - BB < 40 OR Readiness < 50: Reduce volume/intensity by 30%, consider active recovery
 - **HRV matters**: If HRV is below baseline (check hrv.baseline_low), prioritize recovery over intensity
-- **Progressive overload**: Track week-over-week progress. Amichai's weekly plan is at `~/OneDrive/garmin-data/weekly_plan.json`
+- **Progressive overload**: Track week-over-week progress based on Garmin activity history. Amichai builds his own workouts — do not generate or push training plans.
 
 ## Amichai's Fixed Schedule
 - Saturday: Long run
