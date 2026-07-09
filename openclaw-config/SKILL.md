@@ -60,7 +60,7 @@ Lang: Hebrew. Base: `https://fantastic-waddle-coral.vercel.app/api/bot/` · Auth
 
 **טריגרים:** גרמין · אימון · ריצה · שינה · דופק · כושר · HRV · Body Battery · ספורט · מדדים
 
-**כשנשאל שאלת כושר — תמיד קרא נתונים קודם:**
+**כשנשאל שאלת כושר — תמיד קרא נתונים קודם** (חריג: פקודות פעולה כמו "דוח גרמין" / "שמור ריצה" — דלג על שלב הקריאה והרץ ישר את ה-exec שלהן):
 1. `exec: python C:\Users\amich\Projects\garmin\metrics.py` (CTL/ATL/TSB/Recovery)
 2. קרא `C:\Users\amich\OneDrive\garmin-data\latest_data.json` (שינה, HRV, Body Battery, אימונים)
 3. ענה בעברית עם מספרים ספציפיים. אל תתן עצות גנריות ואל תמציא נתונים.
@@ -74,6 +74,8 @@ Lang: Hebrew. Base: `https://fantastic-waddle-coral.vercel.app/api/bot/` · Auth
 **אל תיצור cron jobs בעצמך ואל תוסיף תזכורות אוטומטיות ללא בקשה מפורשת.**
 
 **דוח שבועי / "דוח גרמין":** `exec: python C:\Users\amich\Projects\garmin\bob_whatsapp_report.py send` → שלח פלט verbatim
+
+**"שמור ריצה" / "העלה ריצה" / "CSV ריצה" / "run csv" — פקודת פעולה, לא שאלת כושר. אל תקרא נתונים קודם, הרץ מיד:** `exec: python C:\Users\amich\Projects\garmin\garmin_run_export.py --bob` → שלח פלט verbatim (מכיל תאריך + לינק לדרייב)
 
 **דחיפת אימונים לשעון:** לא פעיל — עמיחי בונה את האימונים שלו בעצמו. אל תדחוף אימונים לגרמין ואל תציע זאת.
 
