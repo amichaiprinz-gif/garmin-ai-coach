@@ -206,6 +206,8 @@ def main(bob_mode=False):
 
     act_id = activity["activityId"]
     date_str = activity["startTimeLocal"][:10]
+    if date_str != __import__("datetime").date.today().isoformat():
+        return  # no run today
     if not bob_mode:
         print(f"ריצה: {date_str} — {activity.get('activityName', '')}")
 
